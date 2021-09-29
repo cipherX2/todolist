@@ -70,13 +70,26 @@ app.get('/work', function (req, res) {
 
 app.post("/delete",function (req,res) {
     const checkedItem = req.body.checkbox;
-    Item.findByIdAndRemove(checkedItem,function (err) {
-        if(err){
-            console.log(err);
-        }
-        res.redirect("/");
-    })
-})
+    const listName = req.body.listName;
+
+    if(listName === "Today"){
+        Item.findByIdAndRemove(checkedItem,function (err) {
+            if(err){
+                console.log(err);
+            }
+            res.redirect("/");
+        });
+    }
+    else{
+        List.findOneAndUpdate({name:listName},{$pull:{items:{_id:checkedItem}}},function (err,foundList) {
+            if(!err){
+                res.redirect("/" + `${listName}`)
+            }
+        })
+    }
+
+    
+});
 
 app.get("/:newRoute",function (req,res) {
     const customListName = req.params.newRoute;
@@ -106,12 +119,22 @@ app.get("/:newRoute",function (req,res) {
 
 app.post('/', function (req, res) {
     const itemName = req.body.item;
+    const listName = req.body.list;
+
     const item = new Item({
         name: itemName
     });
 
-    item.save();
-res.redirect('/');
+    if(listName === "Today"){    
+        item.save();
+        res.redirect('/');
+    }else{
+        List.findOne({name:listName},function (err,foundList) {
+            foundList.items.push(item);
+            foundList.save();
+            res.redirect("/"+listName);
+        })
+    }
 });
 
 app.listen(port, function () {
