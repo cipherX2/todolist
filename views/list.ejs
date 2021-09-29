@@ -6,14 +6,15 @@
     </div>
 
     <div class="box">
-        <% for(let i=0;i<newListItems.length;i++){ %>
-            <div class="item">
-                <input type="checkbox" name="" id="">
-                <p>
-                    <%= newListItems[i] %>
-                </p>
-            </div>
-            <% } %>
+        <% newListItems.forEach(function(item){ %>
+            <form action="/delete" method="POST">
+                <div class="item">
+                    <input type="checkbox" name="checkbox" value="<%= item._id %>" onChange="this.form.submit()">
+                    <p><%= item.name %></p>
+                </div>
+            </form>
+        <% }) %>
+        
             <form action="/" method="post" class="item">
                 <input type="text" name="item" placeholder="Enter new Item" required autofocus>
                 <button type="submit" name="list" value=<%= listTitle %>>+</button>

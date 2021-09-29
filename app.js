@@ -31,19 +31,26 @@ const item3 = new Item({
 
 const defaultItems = [item1, item2, item3];
 
-Item.insertMany(defaultItems,function (err) {
-    if(err){
-        console.log(err);
-    }else{
-        console.log("Successfully inserted");
-    }
-})
+
 
 app.get('/', function (req, res) {
-    
-    res.render('list', {
-        listTitle: "Today",
-        newListItems: defaultItems
+
+    Item.find({}, function (err, foundItems) {
+        if (foundItems.length === 0) {
+            Item.insertMany(defaultItems, function (err) {
+                if (err) {
+                    console.log(err);
+                } else {
+                    res.redirect('/');
+                }
+            });
+        }
+        else {
+            res.render('list', {
+                listTitle: "Today",
+                newListItems: foundItems
+            });
+        }
     });
 });
 
@@ -54,6 +61,16 @@ app.get('/work', function (req, res) {
     });
 });
 
+app.post("/delete",function (req,res) {
+    const checkedItem = req.body.checkbox;
+    Item.findByIdAndRemove(checkedItem,function (err) {
+        if(err){
+            console.log(err);
+        }
+        res.redirect("/");
+    })
+})
+
 app.post('/work', function (req, res) {
     let newItem = req.body.item;
     workItems.push(newItem);
@@ -61,14 +78,13 @@ app.post('/work', function (req, res) {
 });
 
 app.post('/', function (req, res) {
-    let newItem = req.body.item;
-    if (req.body.list === "Work") {
-        workItems.push(newItem);
-        res.redirect('/work');
-    } else {
-        newItems.push(newItem);
-    }
-    res.redirect('/');
+    const itemName = req.body.item;
+    const item = new Item({
+        name: itemName
+    });
+
+    item.save();
+res.redirect('/');
 });
 
 app.listen(port, function () {
