@@ -36,9 +36,7 @@ const listSchema = {
     items: [itemSchema]
 }
 
-const List = mongoose.model("List",listSchema);
-
-
+const List = mongoose.model("List", listSchema);
 
 app.get('/', function (req, res) {
 
@@ -68,50 +66,48 @@ app.get('/work', function (req, res) {
     });
 });
 
-app.post("/delete",function (req,res) {
+app.post("/delete", function (req, res) {
     const checkedItem = req.body.checkbox;
     const listName = req.body.listName;
 
-    if(listName === "Today"){
-        Item.findByIdAndRemove(checkedItem,function (err) {
-            if(err){
+    if (listName === "Today") {
+        Item.findByIdAndRemove(checkedItem, function (err) {
+            if (err) {
                 console.log(err);
             }
             res.redirect("/");
         });
     }
-    else{
-        List.findOneAndUpdate({name:listName},{$pull:{items:{_id:checkedItem}}},function (err,foundList) {
-            if(!err){
-                res.redirect("/" + `${listName}`)
+    else {
+        List.findOneAndUpdate({ name: listName }, { $pull: { items: { _id: checkedItem } } }, function (err, foundList) {
+            if (!err) {
+                res.redirect("/" + `${listName}`);
             }
-        })
+        });
     }
-
-    
 });
 
-app.get("/:newRoute",function (req,res) {
+app.get("/:newRoute", function (req, res) {
     const customListName = req.params.newRoute;
 
-    List.findOne({name:customListName},function (err,results) {
-        if(!err){
-            if(!results){
+    List.findOne({ name: customListName }, function (err, results) {
+        if (!err) {
+            if (!results) {
                 const list = new List({
                     name: customListName,
                     items: defaultItems
                 });
-            
+
                 list.save();
-                res.redirect('/'+ `${customListName}`)
+                res.redirect('/' + `${customListName}`)
             }
-            else{
-                res.render('list',{
+            else {
+                res.render('list', {
                     listTitle: customListName,
                     newListItems: results.items
-                })
+                });
             }
-        }else{
+        } else {
             console.log(err);
         }
     });
@@ -125,15 +121,15 @@ app.post('/', function (req, res) {
         name: itemName
     });
 
-    if(listName === "Today"){    
+    if (listName === "Today") {
         item.save();
         res.redirect('/');
-    }else{
-        List.findOne({name:listName},function (err,foundList) {
+    } else {
+        List.findOne({ name: listName }, function (err, foundList) {
             foundList.items.push(item);
             foundList.save();
-            res.redirect("/"+listName);
-        })
+            res.redirect("/" + listName);
+        });
     }
 });
 
